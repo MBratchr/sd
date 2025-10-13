@@ -1,6 +1,6 @@
 <div class="inspection-manager">
-  @if (fileState.fileName()) {
-    <h3>Inspections for {{ fileState.fileName() }}</h3>
+  @if (currentFileName) {
+    <h3>Inspections for {{ currentFileName }}</h3>
     <p>Total lines: {{ fileState.lines().length }}</p>
 
     <button class="add-btn" (click)="addInspection()">Add Inspection +</button>
@@ -65,5 +65,6 @@
   }
   @else {
     <p>No file loaded yet.</p>
+    <button class="add-btn" disabled>Add Inspection +</button>
   }
 </div>

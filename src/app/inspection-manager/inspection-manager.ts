@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 /* eslint-disable @angular-eslint/component-selector */
 /* eslint-disable @angular-eslint/prefer-inject */
-import { Component } from '@angular/core';
+import { Component, effect, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FileStateService } from '../file-state';
 
@@ -20,16 +20,28 @@ interface Inspection {
   styleUrls: ['./inspection-manager.scss']
 })
 export class InspectionManager {
-  constructor(public fileState: FileStateService) {}
+  constructor(public fileState: FileStateService, private cdr: ChangeDetectorRef) {
+    // whenever a file is (re)set/cleared, update name and reset inspections
+    effect(() => {
+      const _token = this.fileState.fileToken();   // subscribe to changes
+      this.currentFileName = this.fileState.fileName();
+      this.resetInspections();
+      this.cdr.markForCheck();                     // ensure view refreshes
+    });
+  }
+
+  // used in the template instead of reading the signal directly
+  currentFileName = '';
 
   readonly registerOptions = [
     'EAX','EBX','ECX','EDX','ESI','EDI','EBP','ESP',
     'AX','BX','CX','DX','AL','AH','BL','BH','CL','CH','DL','DH'
   ];
-
   readonly flagOptions = ['ZF','CF','SF','OF','PF','AF','DF','IF'];
 
   inspections: Inspection[] = [];
+
+  private resetInspections() { this.inspections = []; }
 
   addInspection() {
     this.inspections.push({
@@ -53,17 +65,9 @@ export class InspectionManager {
     }
   }
 
-  canLock(i: number): boolean {
-    return this.inspections[i].line > 0;
-  }
-
-  lockInspection(i: number) {
-    this.inspections[i].locked = true;
-  }
-
-  deleteInspection(i: number) {
-    this.inspections.splice(i, 1);
-  }
+  canLock(i: number): boolean { return this.inspections[i].line > 0; }
+  lockInspection(i: number) { this.inspections[i].locked = true; }
+  deleteInspection(i: number) { this.inspections.splice(i, 1); }
 
   // ---- helpers used elsewhere (unchanged)
   hasAnyRegisters(ins: Inspection): boolean {
