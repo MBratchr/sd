@@ -1,0 +1,111 @@
+.inspection-manager {
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  background: #d8d8d8;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.add-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  background: #0f62fe;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.inspections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.inspection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.4rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+  gap: 0.75rem;
+}
+
+.left {
+  flex: 1;
+}
+
+.section {
+  margin-top: 0.5rem;
+}
+
+.section h4 {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+.line-input {
+  width: 80px;
+  padding: 0.25rem 0.4rem;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.done-btn {
+  padding: 0.4rem 0.8rem;
+  background: #2ea043;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}
+.done-btn[disabled] {
+  background: #c9c9c9;
+  cursor: not-allowed;
+}
+
+.delete-btn {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 0.3rem;
+  background: #eee;
+  cursor: pointer;
+}
+
+.summary {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.test-btn {
+  align-self: flex-end;
+  padding: 0.6rem 1.2rem;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+}

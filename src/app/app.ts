@@ -1,9 +1,12 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { FileViewer } from './file-viewer/file-viewer';
+import { InspectionManager } from './inspection-manager/inspection-manager';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [FileViewer, InspectionManager],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

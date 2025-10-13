@@ -1,0 +1,69 @@
+<div class="inspection-manager">
+  @if (fileState.fileName()) {
+    <h3>Inspections for {{ fileState.fileName() }}</h3>
+    <p>Total lines: {{ fileState.lines().length }}</p>
+
+    <button class="add-btn" (click)="addInspection()">Add Inspection +</button>
+
+    <div class="inspections">
+      @for (ins of inspections; track $index; let i = $index) {
+        <div class="inspection">
+          @if (!ins.locked) {
+            <div class="left">
+              <input
+                class="line-input"
+                type="number"
+                placeholder="Line #"
+                min="1"
+                [max]="fileState.lines().length"
+                (input)="updateLine(i, $any($event.target).value)"
+              />
+
+              <div class="section">
+                <h4>Registers</h4>
+                <div class="checkbox-grid">
+                  @for (r of registerOptions; track r) {
+                    <label><input type="checkbox" [(ngModel)]="ins.registers[r]" /> {{ r }}</label>
+                  }
+                </div>
+              </div>
+
+              <div class="section">
+                <h4>Flags</h4>
+                <div class="checkbox-grid">
+                  @for (f of flagOptions; track f) {
+                    <label><input type="checkbox" [(ngModel)]="ins.flags[f]" /> {{ f }}</label>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="right">
+              <button class="done-btn" [disabled]="!canLock(i)" (click)="lockInspection(i)">Done</button>
+              <button class="delete-btn" (click)="deleteInspection(i)">X</button>
+            </div>
+          }
+          @else {
+            <div class="summary">
+              <div>
+                <strong>Line {{ ins.line }}</strong><br />
+                @if (hasAnyRegisters(ins)) {
+                  <span>Registers: {{ selectedRegistersText(ins) }}</span><br />
+                }
+                @if (hasAnyFlags(ins)) {
+                  <span>Flags: {{ selectedFlagsText(ins) }}</span>
+                }
+              </div>
+              <button class="delete-btn" (click)="deleteInspection(i)">X</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <button class="test-btn" (click)="exportInspections()">Test</button>
+  }
+  @else {
+    <p>No file loaded yet.</p>
+  }
+</div>

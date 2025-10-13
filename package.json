@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:frontend-SLAIT": "node dist/frontend-SLAIT/server/server.mjs"
+    "serve:ssr:frontend-SLAIT": "node dist/frontend-SLAIT/server/server.mjs",
+    "lint": "ng lint"
   },
   "prettier": {
     "printWidth": 100,
@@ -23,10 +24,12 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/cdk": "^20.2.3",
     "@angular/common": "^20.3.0",
     "@angular/compiler": "^20.3.0",
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
+    "@angular/material": "^20.2.3",
     "@angular/platform-browser": "^20.3.0",
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
@@ -42,12 +45,15 @@
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
+    "angular-eslint": "20.3.0",
+    "eslint": "^9.35.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.40.0"
   }
 }

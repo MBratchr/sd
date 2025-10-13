@@ -1,0 +1,38 @@
+<div class="file-viewer-container">
+  <div class="controls">
+    <label class="file-btn">
+      <input type="file" accept=".asm,.s,.inc" (change)="onFileSelected($event)" />
+      Choose .asm file +
+    </label>
+
+    <div class="dropzone" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+      Drag & drop here
+    </div>
+  </div>
+
+  @if (warn) {
+    <div class="warn">{{ warn }}</div>
+  }
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (content) {
+    <div class="meta">
+      <div><strong>File:</strong> {{ fileName }}</div>
+      <div><strong>Size:</strong> {{ fileSize | number }} bytes</div>
+      <div><strong>Lines:</strong> {{ lines.length | number }}</div>
+    </div>
+
+    <div class="viewer">
+      <pre class="codeblock"><code>
+        @for (line of lines; track $index; let i = $index) {
+          <span class="line">
+            <span class="ln">{{ i + 1 }}</span>
+            <span [textContent]="line"></span>
+          </span>
+        }
+      </code></pre>
+    </div>
+  }
+</div>

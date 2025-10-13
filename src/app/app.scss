@@ -1,0 +1,26 @@
+.page {
+  margin: 1rem; /* slight space from page edge */
+  color: #000000;
+  background: #ffffff;
+  min-height: 100vh;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 59% 40%;
+  gap: 1rem;
+}
+
+/*.rpanel {
+  border: 1px solid #333;
+  border-radius: 0.25rem;
+  background: #d8d8d8;
+  padding: 1rem;
+}*/
+
+/*.lpanel {
+  border: 1px solid #333;
+  border-radius: 0.25rem;
+  background: #d8d8d8;
+  padding: 1rem;
+}*/

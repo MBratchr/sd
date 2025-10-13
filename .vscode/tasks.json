@@ -37,6 +37,13 @@
           }
         }
       }
+    },
+    {
+      "label": "ng serve",
+      "type": "shell",
+      "command": "ng serve",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch"
     }
   ]
 }
