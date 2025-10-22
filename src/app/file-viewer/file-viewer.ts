@@ -1,3 +1,5 @@
+/* eslint-disable @angular-eslint/prefer-inject */
+/* eslint-disable @angular-eslint/component-selector */
 import { Component } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -122,21 +124,22 @@ export class FileViewer {
 
   private getBoilerplateTemplate(): string {
     return [
-      '.386',
-      '.model flat, stdcall',
-      'option casemap:none',
-      'INCLUDE Irvine32.inc',
-      '',
-      '.data',
-      '; data goes here (if any)',
-      '',
-      '.code',
-      'main PROC',
-      '    ; code goes here',
-      '    exit',
-      'main ENDP',
-      'END main'
+      'section .data',
+      '   hello db \'Hello, World!\',0',
+      'section .text',
+      '   global _start',
+      '_start:',
+      '   ; Write "Hello, World!" to stdout',
+      '   mov eax, 4',
+      '   mov ebx, 1',
+      '   lea ecx, [hello]',
+      '   mov edx, 13',
+      '   int 0x80',
+      '   ; Exit the program',
+      '   mov eax, 1',
+      '   xor ebx, ebx',
+      '   int 0x80'
     ].join('\n');
   }
-  
+
 }
