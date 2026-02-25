@@ -1,3 +1,39 @@
+<!--
+  Component: Inspection Manager
+
+  Description:
+  This component provides an interface for managing inspections associated with a file.
+  It allows users to add, edit, and delete inspections, as well as lock completed inspections.
+  Each inspection includes line numbers, registers, and flags.
+
+  Features:
+  - Displays the current file name and total lines in the file.
+  - Allows adding new inspections with a button.
+  - Provides input fields for specifying line numbers, selecting registers, and flags for each inspection.
+  - Supports locking inspections when completed and deleting inspections.
+  - Displays a summary of locked inspections, including line numbers, selected registers, and flags.
+  - Includes an export button to upload or test inspections.
+
+  Conditional Rendering:
+  - If no file is loaded, displays a message and disables the "Add Inspection" button.
+  - If a file is loaded, displays the inspection management interface.
+
+  Key Elements:
+  - `addInspection()`: Adds a new inspection.
+  - `updateLine(i, value)`: Updates the line number for a specific inspection.
+  - `lockInspection(i)`: Locks a specific inspection.
+  - `deleteInspection(i)`: Deletes a specific inspection.
+  - `exportInspections()`: Exports the inspections for testing or uploading.
+  - `hasAnyRegisters(ins)`: Checks if any registers are selected for an inspection.
+  - `hasAnyFlags(ins)`: Checks if any flags are selected for an inspection.
+  - `selectedRegistersText(ins)`: Returns a string of selected registers for an inspection.
+  - `selectedFlagsText(ins)`: Returns a string of selected flags for an inspection.
+
+  Notes:
+  - The component uses Angular directives such as `*ngIf` and `*ngFor` for conditional rendering and iteration.
+  - The `[(ngModel)]` directive is used for two-way data binding with input elements.
+  - The `track` keyword is used for efficient rendering of lists.
+-->
 <div class="inspection-manager">
   @if (currentFileName) {
     <h3>Inspections for {{ currentFileName }}</h3>
@@ -61,10 +97,12 @@
       }
     </div>
 
-    <button class="test-btn" (click)="exportInspections()">Test</button>
+    <button class="test-btn" (click)="exportInspections()" [disabled]="isUploading">
+      @if (isUploading) { Uploading… } @else { Test }
+    </button>
   }
   @else {
-    <p>No file loaded yet. Upload a file to add inspections.</p>
+    <h3>No file loaded</h3>
     <button class="add-btn" disabled>Add Inspection +</button>
   }
 </div>

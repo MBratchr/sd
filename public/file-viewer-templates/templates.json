@@ -1,0 +1,14 @@
+[
+  {
+    "id": "default",
+    "label": "Default",
+    "file": "/file-viewer-templates/default.txt",
+    "suggestedFileName": "manual-input.asm"
+  },
+  {
+    "id": "hello_world",
+    "label": "Hello World",
+    "file": "/file-viewer-templates/hello-world-temp.txt",
+    "suggestedFileName": "hello.asm"
+  }
+]

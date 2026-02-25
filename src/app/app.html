@@ -1,11 +1,34 @@
-<div class="page">
-  <h1>Welcome to SLAIT</h1>
-  <h2>Created by Michael Bratcher and Maria Linkins-Niel </h2>
+<div class="page" [class.dark]="isDarkMode" [class.light]="!isDarkMode">
+  <header class="app-header">
+    <div class="brand">
+      <h1>Welcome to SLAIT</h1>
+      <h2>Created by Michael Bratcher and Maria Linkins-Niel</h2>
+    </div>
 
-  <div class="layout">
+    <div class="theme-toggle" aria-label="Toggle light or dark mode">
+      <span class="theme-label">Light</span>
 
+      <button
+        type="button"
+        class="theme-switch"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="isDarkMode"
+      >
+        <span class="theme-track">
+          <span class="theme-thumb" [class.theme-thumb-on]="isDarkMode"></span>
+        </span>
+      </button>
+
+      <span class="theme-label">Dark</span>
+    </div>
+  </header>
+
+  <main class="layout">
     <file-viewer></file-viewer>
     <inspection-manager></inspection-manager>
 
-  </div>
+    <!-- New widget below the other two -->
+    <!-- <register-trace class="full-row"></register-trace> -->
+    <register-trace class="full-row" [trace]="mockTrace"></register-trace>
+    </main>
 </div>

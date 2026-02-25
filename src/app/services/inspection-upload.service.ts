@@ -1,19 +1,23 @@
-/* eslint-disable @angular-eslint/prefer-inject */
-import { Injectable } from '@angular/core';
+import * as core from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { InspectionResult } from './inspection.models';
 
-@Injectable({ providedIn: 'root' })
+@core.Injectable({ providedIn: 'root' })
 export class InspectionUploadService {
-  private apiUrl = 'https://your-backend-domain.com/api/upload-inspection'; // ✅ replace with your backend URL
+  private apiUrl = 'badlink';
 
   constructor(private http: HttpClient) {}
 
-  uploadInspection(asmFile: File | Blob, instructions: Blob): Observable<unknown> {
+  uploadInspection(
+    asmFile: File | Blob,
+    instructions: Blob
+  ): Observable<InspectionResult> {
+
     const formData = new FormData();
     formData.append('asmFile', asmFile);
     formData.append('instructions', instructions, 'inspection.txt');
 
-    return this.http.post(this.apiUrl, formData);
+    return this.http.post<InspectionResult>(this.apiUrl, formData);
   }
 }

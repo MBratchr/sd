@@ -1,9 +1,14 @@
-/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @angular-eslint/component-selector */
+/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
 /* eslint-disable @angular-eslint/prefer-inject */
 import { Component, effect, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileStateService } from '../file-state';
+import { InspectionUploadService } from '../services/inspection-upload.service';
+import type { BackendSandboxResponse } from '../services/inspection.models';
+import { RegisterTrace } from '../register-trace/register-trace';
 
 interface Inspection {
   line: number;
@@ -15,23 +20,34 @@ interface Inspection {
 @Component({
   selector: 'inspection-manager',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule, RegisterTrace],
   templateUrl: './inspection-manager.html',
-  styleUrls: ['./inspection-manager.scss']
+  styleUrls: ['./inspection-manager.scss'],
 })
 export class InspectionManager {
-  constructor(public fileState: FileStateService, private cdr: ChangeDetectorRef) {
-    // whenever a file is (re)set/cleared, update name and reset inspections
+  constructor(
+    public fileState: FileStateService,
+    private uploadService: InspectionUploadService,
+    private cdr: ChangeDetectorRef
+  ) {
+    // Refresh filename & clear inspections on new file
     effect(() => {
-      const _token = this.fileState.fileToken();   // subscribe to changes
+      const _token = this.fileState.fileToken();
       this.currentFileName = this.fileState.fileName();
       this.resetInspections();
-      this.cdr.markForCheck();                     // ensure view refreshes
+
+      // clear old backend output when file changes
+      this.backendResponse = null;
+
+      this.cdr.markForCheck();
     });
   }
 
-  // used in the template instead of reading the signal directly
   currentFileName = '';
+  isUploading = false;
+
+  /** Stores the JSON returned by the backend (your example payload) */
+  backendResponse: BackendSandboxResponse | null = null;
 
   readonly registerOptions = [
     'EAX','EBX','ECX','EDX','ESI','EDI','EBP','ESP',
@@ -69,7 +85,6 @@ export class InspectionManager {
   lockInspection(i: number) { this.inspections[i].locked = true; }
   deleteInspection(i: number) { this.inspections.splice(i, 1); }
 
-  // ---- helpers used elsewhere (unchanged)
   hasAnyRegisters(ins: Inspection): boolean {
     return this.registerOptions.some(r => !!ins.registers[r]);
   }
@@ -79,50 +94,61 @@ export class InspectionManager {
   selectedRegistersText(ins: Inspection): string {
     const list = this.registerOptions.filter(r => ins.registers[r]);
     return list.length ? list.join(', ') : '—';
-    }
+  }
   selectedFlagsText(ins: Inspection): string {
     const list = this.flagOptions.filter(f => ins.flags[f]);
     return list.length ? list.join(', ') : '—';
   }
 
-  // ---- NEW: build one export line in the required format
   private buildExportLine(ins: Inspection): string {
     const parts: string[] = [];
     parts.push(`line:${ins.line}`);
-
-    // registers first, in the exact order of registerOptions
     for (const r of this.registerOptions) {
-      const key = r.toLowerCase();
-      const val = ins.registers[r] ? 1 : 0;
-      parts.push(`${key}:${val}`);
+      parts.push(`${r.toLowerCase()}:${ins.registers[r] ? 1 : 0}`);
     }
-
-    // then flags, in the exact order of flagOptions
     for (const f of this.flagOptions) {
-      const key = f.toLowerCase();
-      const val = ins.flags[f] ? 1 : 0;
-      parts.push(`${key}:${val}`);
+      parts.push(`${f.toLowerCase()}:${ins.flags[f] ? 1 : 0}`);
     }
-
     return parts.join(', ');
   }
 
-  // ---- UPDATED: export all locked inspections using the new format
+  // "Test" → POST ASM + instructions to backend
   exportInspections() {
-    const lines = this.inspections
+    const instructionLines = this.inspections
       .filter(ins => ins.locked)
       .map(ins => this.buildExportLine(ins));
+    const instructionText = instructionLines.join('\n');
 
-    const text = lines.join('\n');
+    const instructionsBlob = new Blob([instructionText], { type: 'text/plain' });
 
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
+    const asmText = this.fileState.lines().join('\n');
+    const asmBlob = new Blob([asmText], { type: 'text/plain' });
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${this.fileState.fileName() || 'inspections'}.txt`; // keep .txt
-    a.click();
+    const asmFile = new File(
+      [asmBlob],
+      this.fileState.fileName() || 'uploaded.asm',
+      { type: 'text/plain' }
+    );
 
-    URL.revokeObjectURL(url);
+    this.isUploading = true;
+
+    this.uploadService.uploadInspection(asmFile, instructionsBlob).subscribe({
+      next: (res) => {
+        this.isUploading = false;
+
+        // ✅ Store backend JSON for the widget
+        this.backendResponse = res;
+
+        console.log('Backend JSON:', res);
+        alert('Inspection data sent to backend successfully.');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isUploading = false;
+        console.error('ERROR: Upload failed', err);
+        alert('Upload failed. Check console for details.');
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

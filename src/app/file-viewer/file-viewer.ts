@@ -1,22 +1,32 @@
-/* eslint-disable @angular-eslint/prefer-inject */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @angular-eslint/component-selector */
+/* eslint-disable @angular-eslint/prefer-inject */
 import { Component } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { FileStateService } from '../file-state';
+
+type ViewerTemplate = {
+  id: string;
+  label: string;
+  file: string;
+  suggestedFileName?: string;
+};
 
 @Component({
   selector: 'file-viewer',
   standalone: true,
-  imports: [DecimalPipe, FormsModule],
+  imports: [DecimalPipe, FormsModule, HttpClientModule],
   templateUrl: './file-viewer.html',
   styleUrls: ['./file-viewer.scss']
 })
 export class FileViewer {
-  constructor(private fileState: FileStateService) {}
+  constructor(private fileState: FileStateService, private http: HttpClient) {
+    this.loadTemplates();
+  }
 
   // file state
-  manualFileName = 'manual-input.asm';
   fileName = '';
   fileSize = 0;
   content = '';
@@ -26,14 +36,57 @@ export class FileViewer {
   debug = false;
 
   // manual input state
-  manualMode = false;   // true when user is typing lines directly
-  manualLocked = false; // true after Done is pressed
+  manualMode = false;
+  manualLocked = false;
   manualText = '';
+  manualFileName = 'manual-input.asm';
 
   private readonly asmLike = /\.(asm|s|inc)$/i;
 
   get isAsmLike(): boolean {
     return this.fileName ? this.asmLike.test(this.fileName) : false;
+  }
+
+  // ----- template state
+  templates: ViewerTemplate[] = [];
+  selectedTemplateId = '';
+  private readonly templateManifestUrl = '/file-viewer-templates/templates.json';
+
+
+  private loadTemplates() {
+    this.http.get<ViewerTemplate[]>(this.templateManifestUrl).subscribe({
+      next: (list) => {
+        this.templates = Array.isArray(list) ? list : [];
+
+        // Prefer "default", else first item
+        const preferred = this.templates.find((t) => t.id === 'default') ?? this.templates[0];
+        this.selectedTemplateId = preferred ? preferred.id : '';
+      },
+      error: () => {
+        this.templates = [];
+        this.selectedTemplateId = '';
+      }
+    });
+  }
+
+  onTemplateChange(templateId: string) {
+    this.selectedTemplateId = templateId;
+
+    const tmpl = this.templates.find((t) => t.id === templateId);
+    if (!tmpl) return;
+
+    if (tmpl.suggestedFileName) {
+      this.manualFileName = tmpl.suggestedFileName;
+    }
+
+    this.http.get(tmpl.file, { responseType: 'text' }).subscribe({
+      next: (text) => {
+        this.manualText = (text ?? '').replace(/^\uFEFF/, '');
+      },
+      error: () => {
+        this.warn = `Could not load template: ${tmpl.label}`;
+      }
+    });
   }
 
   // ----- file upload flow
@@ -54,7 +107,9 @@ export class FileViewer {
     this.loadFile(file);
   }
 
-  onDragOver(ev: DragEvent) { ev.preventDefault(); }
+  onDragOver(ev: DragEvent) {
+    ev.preventDefault();
+  }
 
   private loadFile(file: File) {
     this.resetViewErrors();
@@ -71,24 +126,26 @@ export class FileViewer {
       const noBom = raw.replace(/^\uFEFF/, '');
       this.applyContent(noBom);
     };
-    reader.onerror = () => { this.error = 'Failed to read file.'; };
+    reader.onerror = () => {
+      this.error = 'Failed to read file.';
+    };
     reader.readAsText(file);
   }
 
   private applyContent(text: string) {
     this.content = text;
     this.lines = text.replace(/\r\n/g, '\n').split('\n');
-    // push to shared state so the right panel sees it
     this.fileState.setFile(this.fileName, this.lines);
   }
 
-  private resetViewErrors() { this.error = ''; this.warn = ''; }
+  private resetViewErrors() {
+    this.error = '';
+    this.warn = '';
+  }
 
   private exitManualModeIfNeeded() {
     this.manualMode = false;
     this.manualLocked = false;
-    // keep manualText as-is when switching from manual to file load
-    // (you can clear it if you prefer): this.manualText = '';
   }
 
   // ----- manual input flow
@@ -97,49 +154,32 @@ export class FileViewer {
     this.manualMode = true;
     this.manualLocked = false;
 
-    // ✅ reset current "file" context and right panel
-    this.fileName = this.manualFileName;   // show a manual name immediately
+    // reset the shared state so the right-side clears
+    this.fileName = this.manualFileName;
     this.fileSize = 0;
     this.content = '';
     this.lines = [];
-    this.fileState.clearFile();            // ✅ clears inspections & UI dependent on file
+    this.fileState.clearFile();
 
-    // prefill editor if blank
+    // If empty, load Default template (or first). No boilerplate.
     if (!this.manualText.trim()) {
-      this.manualText = this.getBoilerplateTemplate();
+      const preferred = this.templates.find((t) => t.id === 'default') ?? this.templates[0];
+      if (preferred) {
+        this.selectedTemplateId = preferred.id;
+        this.onTemplateChange(preferred.id);
+      } else {
+        this.manualText = '';
+      }
     }
   }
 
   finishManualInput() {
-    // Normalize EOLs and trim trailing blanks only
     const finalText = (this.manualText ?? '').replace(/\r\n/g, '\n').trimEnd();
 
-    // Create/refresh the “virtual file” from the editor content
-    if (!this.fileName) this.fileName = 'manual-input.asm';
+    this.fileName = this.manualFileName || 'manual-input.asm';
     this.fileSize = new Blob([finalText]).size;
 
-    this.manualLocked = true;     // lock editing
-    this.applyContent(finalText); // updates content/lines and notifies service
+    this.manualLocked = true;
+    this.applyContent(finalText);
   }
-
-  private getBoilerplateTemplate(): string {
-    return [
-      'section .data',
-      '   hello db \'Hello, World!\',0',
-      'section .text',
-      '   global _start',
-      '_start:',
-      '   ; Write "Hello, World!" to stdout',
-      '   mov eax, 4',
-      '   mov ebx, 1',
-      '   lea ecx, [hello]',
-      '   mov edx, 13',
-      '   int 0x80',
-      '   ; Exit the program',
-      '   mov eax, 1',
-      '   xor ebx, ebx',
-      '   int 0x80'
-    ].join('\n');
-  }
-
 }

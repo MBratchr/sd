@@ -1,150 +1,373 @@
 .file-viewer-container {
-  border: 1px solid #333;
-  border-radius: 0.5rem;
-  background: #d8d8d8;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
   padding: 1rem;
   height: 100%;
   position: relative;
   overflow: hidden;
-}
 
-.controls {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
-  align-items: stretch;
-  min-width: 0;
 }
 
-.file-btn {
-  position: relative;
-  display: flex;
-  justify-content: center;
+/* ---------------------------- */
+/* BUTTONS IN FILE VIEWER       */
+/* ---------------------------- */
+
+/* Base style: pastel purple squircles */
+.file-viewer-container .file-btn,
+.file-viewer-container .manual-btn,
+.file-viewer-container .done-btn {
+  border-radius: 999px;
+  padding: 0.55rem 1.15rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  background: var(--btn-pastel);
+  border: 1px solid var(--btn-pastel);
+  color: var(--text);
+
+  display: inline-flex;
   align-items: center;
-  width: 30%;
-  white-space: nowrap;
-  border-radius: 0.5rem;
-  background: #0f62fe;
-  color: white;
+  justify-content: center;
+  gap: 0.35rem;
+
   cursor: pointer;
-  user-select: none;
-  text-align: center;
-  font-size: 1rem;
-  overflow: hidden;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    border-color 150ms ease,
+    transform 100ms ease;
 }
-.file-btn input[type="file"] {
+
+/* Hover: royal purple (or darker in dark mode) */
+.file-viewer-container .file-btn:hover,
+.file-viewer-container .manual-btn:hover,
+.file-viewer-container .done-btn:hover {
+  background: var(--btn-hover);
+  border-color: var(--btn-hover);
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+}
+
+/* Pressed: purple gradient (darkened in dark mode) */
+.file-viewer-container .file-btn:active,
+.file-viewer-container .manual-btn:active,
+.file-viewer-container .done-btn:active {
+  background: linear-gradient(
+    135deg,
+    var(--btn-pressed-1),
+    var(--btn-pressed-2)
+  );
+  color: #ffffff;
+  transform: translateY(1px) scale(0.99);
+  box-shadow:
+    0 0 0 1px rgba(120, 81, 169, 0.55),
+    0 12px 25px rgba(120, 81, 169, 0.65);
+}
+
+/* Disabled state for Done button */
+.file-viewer-container .done-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Choose .asm label specifics */
+.file-viewer-container .file-btn {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-inline: 1.4rem;
+}
+
+.file-viewer-container .file-btn input[type='file'] {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  inset: 0;
   opacity: 0;
   cursor: pointer;
 }
 
-.dropzone {
-  flex: 1;
-  min-width: 240px;
-  padding: 0.8rem;
-  border: 2px dashed #888;
-  border-radius: 0.5rem;
-  text-align: center;
-  color: #666;
-  background: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* Manual input button label */
+.file-viewer-container .manual-btn {
+  white-space: nowrap;
 }
 
-.manual-btn {
-  padding: 0 1rem;
-  border-radius: 0.5rem;
-  background: #5e5e5e;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
+/* ---------------------------- */
+/* CONTROLS LAYOUT              */
+/* ---------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* Drag-and-drop zone */
+.dropzone {
+  flex: 1 1 220px;
+  border-radius: 18px;
+  border: 1.5px dashed var(--border-strong);
+  background: var(--bg-soft);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  transition:
+    background 150ms ease-out,
+    border-color 150ms ease-out,
+    color 150ms ease-out,
+    box-shadow 150ms ease-out;
 }
+
+.dropzone:hover {
+  background: rgba(120, 81, 169, 0.08);
+  border-color: rgba(120, 81, 169, 0.7);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+}
+
+/* ---------------------------- */
+/* MESSAGES                     */
+/* ---------------------------- */
+
+.warn,
+.error {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.warn {
+  background: rgba(251, 191, 36, 0.1);
+  color: #92400e;
+}
+
+.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
+}
+
+/* ---------------------------- */
+/* EDITOR                       */
+/* ---------------------------- */
+
+.editor {
+  border-radius: 18px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-soft);
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.name-input {
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.85rem;
+  min-width: 0;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: rgba(120, 81, 169, 0.7);
+  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+}
+
+.editor-area {
+  min-height: 180px;
+  max-height: 320px;
+  resize: vertical;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  padding: 0.6rem 0.75rem;
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.editor-area:focus {
+  outline: none;
+  border-color: rgba(120, 81, 169, 0.7);
+  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---------------------------- */
+/* META + VIEWER                */
+/* ---------------------------- */
 
 .meta {
-  font-size: 0.95rem;
-  color: #000;
   display: flex;
-  gap: 1.5rem;
-  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.meta > div strong {
+  color: var(--text);
 }
 
 .viewer {
-  border: 1px solid #222;
-  border-radius: 0.25rem;
+  flex: 1;
+  border-radius: 18px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-soft);
   overflow: auto;
-  max-height: 70vh;
-  background: #0a0a0a;
+  padding: 0.5rem 0.75rem;
+}
+
+.viewer::-webkit-scrollbar {
+  width: 8px;
+}
+.viewer::-webkit-scrollbar-track {
+  background: transparent;
+}
+.viewer::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 999px;
 }
 
 .codeblock {
   margin: 0;
   padding: 0.5rem 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
-  line-height: 1.2;
-  color: #e6e6e6;
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text);
   white-space: pre;
 }
 
-.line { display: flex; align-items: baseline; border-bottom: 1px solid #222; padding: 0 0.25rem; }
-.line:last-child { border-bottom: none; }
-.ln { display: inline-block; width: 3ch; margin-right: 1ch; color: #888; text-align: right; user-select: none; }
-
-.error { color: #b00020; }
-.warn  { color: #a15c00; background: #fff7e6; padding: 0.5rem 0.75rem; border-radius: 0.4rem; }
-
-/* manual editor */
-.editor {
+.line {
   display: flex;
-  flex-direction: column;
-  height: 70vh;               /* same as before, but contained */
-  max-width: 100%;
-  border: 1px solid #d8d8d8;  /* inner border */
-  border-radius: 0.5rem;
-  background: #d8d8d8;
-  overflow: hidden;           /* prevent children from bleeding out */
-  box-shadow: 0 0 0 2px #d8d8d8 inset;
+  align-items: baseline;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 0.25rem;
 }
-.editor-area {
-  flex: 1 1 auto;
-  min-height: 0;              /* critical for flex children to allow scrolling */
-  width: 100%;
-  padding: 0.75rem;
-  box-sizing: border-box;      /* padding won’t increase width */
-  resize: none;
-  border: 0;
-  outline: none;
-  background: #3a3a3a;
-  color: #e6e6e6;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 13px;
-  line-height: 1.3;
-  overflow: auto;
+.line:last-child {
+  border-bottom: none;
 }
-.editor-actions {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: flex-end;
+
+.ln {
+  display: inline-block;
+  width: 3ch;
+  margin-right: 1ch;
+  color: var(--text-muted);
+  text-align: right;
+  user-select: none;
+}
+
+/* ---------------------------- */
+/* TEMPLATE DROPDOWN            */
+/* ---------------------------- */
+
+.editor-header {
+  flex-wrap: wrap; /* allows filename + template to stack nicely on small widths */
+}
+
+/* Make header labels behave consistently */
+.editor-header label {
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  border-top: 1px solid #444;
-  background: #d8d8d8;
+  min-width: 0;
 }
-.done-btn {
-  padding: 0.4rem 0.9rem;
-  border: none;
-  border-radius: 0.3rem;
-  background: #2ea043;
-  color: #fff;
+
+/* Push template selector to the right when there’s room */
+.template-select {
+  margin-left: auto;
+}
+
+/* Match dropdown styling to .name-input */
+.template-select select {
+  padding: 0.3rem 2.1rem 0.3rem 0.6rem; /* extra right padding for the arrow */
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  color: var(--text);
+  font-size: 0.85rem;
+  min-width: 180px;
   cursor: pointer;
+
+  /* consistent look across browsers */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
 }
-.done-btn[disabled] {
-  background: #c9c9c9;
+
+/* Custom arrow (subtle, theme-friendly) */
+.template-select {
+  position: relative;
+}
+.template-select::after {
+  content: '';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  width: 0.55rem;
+  height: 0.55rem;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Focus ring to match other inputs */
+.template-select select:focus {
+  outline: none;
+  border-color: rgba(120, 81, 169, 0.7);
+  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+}
+
+/* Disabled state (if you ever disable it) */
+.template-select select:disabled {
+  opacity: 0.65;
   cursor: not-allowed;
+}
+
+/* When wrapping, keep things tidy */
+@media (max-width: 520px) {
+  .template-select {
+    margin-left: 0;
+  }
+  .template-select select {
+    width: 100%;
+    min-width: 0;
+  }
 }

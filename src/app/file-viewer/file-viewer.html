@@ -1,3 +1,5 @@
+<!-- (same big header comment as you had is fine; omitted here for brevity) -->
+
 <div class="file-viewer-container">
   <div class="controls">
     <label class="file-btn">
@@ -12,46 +14,51 @@
     <button class="manual-btn" (click)="startManualInput()">Input Lines Directly</button>
   </div>
 
-  @if (debug) {
-    <details open class="debug">
-      <summary>Debug</summary>
-      <div><b>Name:</b> {{ fileName || '(none)' }}</div>
-      <div><b>Size:</b> {{ fileSize | number }} bytes</div>
-      <div><b>Asm name?</b> {{ isAsmLike ? 'yes' : 'no' }}</div>
-      <div><b>Error:</b> {{ error || '—' }}</div>
-      <div><b>Warn:</b> {{ warn || '—' }}</div>
-      <div><b>Content length:</b> {{ content.length || 0 }}</div>
-      <div><b>Lines:</b> {{ lines.length || 0 }}</div>
-      <div><b>Manual mode:</b> {{ manualMode ? (manualLocked ? 'locked' : 'editing') : 'off' }}</div>
-    </details>
-  }
-
   @if (warn) { <div class="warn">{{ warn }}</div> }
   @if (error) { <div class="error">{{ error }}</div> }
 
-  <!-- Manual editor (visible when editing directly) -->
+  <!-- Manual editor -->
   @if (manualMode && !manualLocked) {
-  <div class="editor">
-    <div class="editor-header">
-      <label>
-        Manual file name:
-        <input class="name-input" [(ngModel)]="manualFileName" placeholder="manual-input.asm" />
-      </label>
+    <div class="editor">
+      <div class="editor-header">
+        <label>
+          Manual file name:
+          <input class="name-input" [(ngModel)]="manualFileName" placeholder="manual-input.asm" />
+        </label>
+
+        <label class="template-select">
+          Template:
+          <select
+            [disabled]="!templates.length"
+            [(ngModel)]="selectedTemplateId"
+            (ngModelChange)="onTemplateChange($event)"
+          >
+            @if (!templates.length) {
+              <option value="" selected>No templates avaliable</option>
+            } @else {
+              @for (t of templates; track t.id) {
+                <option [value]="t.id">{{ t.label }}</option>
+              }
+            }
+          </select>
+        </label>
+      </div>
+
+      <textarea
+        class="editor-area"
+        [(ngModel)]="manualText"
+        placeholder="Type your MASM here…"
+      ></textarea>
+
+      <div class="editor-actions">
+        <button class="done-btn" [disabled]="!manualText.trim().length" (click)="finishManualInput()">
+          Done
+        </button>
+      </div>
     </div>
+  }
 
-    <textarea class="editor-area"
-              [(ngModel)]="manualText"
-              placeholder="Type your MASM here…"></textarea>
-
-    <div class="editor-actions">
-      <button class="done-btn" [disabled]="!manualText.trim().length" (click)="finishManualInput()">
-        Done
-      </button>
-    </div>
-  </div>
-}
-
-  <!-- Standard viewer when content exists and manual is not editing -->
+  <!-- Viewer -->
   @if (content && (!manualMode || manualLocked)) {
     <div class="meta">
       <div><strong>File:</strong> {{ fileName }}</div>

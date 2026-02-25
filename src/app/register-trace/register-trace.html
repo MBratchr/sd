@@ -1,0 +1,162 @@
+<div class="card">
+  <div class="header">
+    <div class="title">
+      <div class="h">Register Trace</div>
+      <div class="sub">Separate graphs for registers vs flags</div>
+    </div>
+
+    <div class="controls">
+      <div class="range">
+        <label for="trace-line-from">From</label>
+        <input
+          id="trace-line-from"
+          type="number"
+          [min]="minLine()"
+          [max]="maxLine()"
+          [ngModel]="lineFrom()"
+          (ngModelChange)="lineFrom.set($event); onRangeChange()"
+        />
+
+        <label for="trace-line-to">To</label>
+        <input
+          id="trace-line-to"
+          type="number"
+          [min]="minLine()"
+          [max]="maxLine()"
+          [ngModel]="lineTo()"
+          (ngModelChange)="lineTo.set($event); onRangeChange()"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div class="sections">
+    <!-- REGISTERS -->
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Registers</div>
+
+        <div class="section-controls">
+          <div class="mode">
+            <label for="regs-plot-mode">Plot</label>
+            <select
+              id="regs-plot-mode"
+              [ngModel]="regPlotMode()"
+              (ngModelChange)="regPlotMode.set($event); onRegModeChange()"
+            >
+              <option value="value">Value (numeric)</option>
+              <option value="toggle">Toggle (1 if changed)</option>
+            </select>
+          </div>
+
+          <div class="btns">
+            <button type="button" class="btn" (click)="setSelectAllRegs(true)">Select all</button>
+            <button type="button" class="btn" (click)="setSelectAllRegs(false)">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <aside class="picker">
+          <div class="picker-title">Registers</div>
+
+          <div class="picker-list" *ngIf="regKeys().length; else noRegs">
+            <label class="pick" *ngFor="let k of regKeys()">
+              <input
+                type="checkbox"
+                [checked]="selectedRegs().includes(k)"
+                (change)="toggleReg(k, $any($event.target).checked)"
+              />
+              <span class="name">{{ k }}</span>
+            </label>
+          </div>
+
+          <ng-template #noRegs>
+            <div class="empty">No registers found.</div>
+          </ng-template>
+        </aside>
+
+        <div class="chart">
+          <canvas #regsCanvas></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- FLAGS -->
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Flags</div>
+
+        <div class="section-controls">
+          <div class="mode">
+            <label for="flags-plot-mode">Plot</label>
+            <select
+              id="flags-plot-mode"
+              [ngModel]="flagPlotMode()"
+              (ngModelChange)="flagPlotMode.set($event); onFlagModeChange()"
+            >
+              <option value="toggle">Toggle (1 if changed)</option>
+              <option value="raw">Raw (0/1)</option>
+            </select>
+          </div>
+
+          <div class="btns">
+            <button type="button" class="btn" (click)="setSelectAllFlags(true)">Select all</button>
+            <button type="button" class="btn" (click)="setSelectAllFlags(false)">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <aside class="picker">
+          <div class="picker-title">Flags</div>
+
+          <div class="picker-list" *ngIf="flagKeys().length; else noFlags">
+            <label class="pick" *ngFor="let k of flagKeys()">
+              <input
+                type="checkbox"
+                [checked]="selectedFlags().includes(k)"
+                (change)="toggleFlag(k, $any($event.target).checked)"
+              />
+              <span class="name">{{ k }}</span>
+            </label>
+          </div>
+
+          <ng-template #noFlags>
+            <div class="empty">No flags found.</div>
+          </ng-template>
+        </aside>
+
+        <div class="chart">
+          <canvas #flagsCanvas></canvas>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- OPTIONAL: keep the table if you still want it (shows both selected regs + flags) -->
+  <div class="table">
+    <div class="table-title">Line-by-line state</div>
+
+    <table *ngIf="filteredFrames().length; else emptyTable">
+      <thead>
+        <tr>
+          <th class="linecol">Line</th>
+          <th *ngFor="let k of selectedRegs()">{{ k }}</th>
+          <th *ngFor="let k of selectedFlags()">{{ k }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of filteredFrames()">
+          <td class="linecol">{{ f.line }}</td>
+          <td *ngFor="let k of selectedRegs()">{{ f.regs[k] ?? '—' }}</td>
+          <td *ngFor="let k of selectedFlags()">{{ (f.flags?.[k] ?? '—') }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #emptyTable>
+      <div class="empty">No trace frames in range.</div>
+    </ng-template>
+  </div>
+</div>
