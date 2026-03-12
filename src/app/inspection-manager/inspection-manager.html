@@ -100,9 +100,7 @@
     <button class="test-btn" (click)="exportInspections()" [disabled]="isUploading">
       @if (isUploading) { Uploading… } @else { Test }
     </button>
-    @if (backendResponse) {
-      <register-trace [trace]="backendResponse" />
-    }
+
   }
   @else {
     <h3>No file loaded</h3>
