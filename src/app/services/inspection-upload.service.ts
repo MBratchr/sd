@@ -5,7 +5,7 @@ import { BackendSandboxResponse } from './inspection.models';
 
 @core.Injectable({ providedIn: 'root' })
 export class InspectionUploadService {
-  private apiUrl = 'badlink'; // set to your real backend endpoint when ready
+  private apiUrl = "/api/inspect"; // set to your real backend endpoint when ready
 
   constructor(private http: HttpClient) {}
 
