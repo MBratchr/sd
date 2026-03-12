@@ -9,6 +9,7 @@ import { FileStateService } from '../file-state';
 import { InspectionUploadService } from '../services/inspection-upload.service';
 import type { BackendSandboxResponse } from '../services/inspection.models';
 import { RegisterTrace } from '../register-trace/register-trace';
+import { TraceResultService } from '../services/trace-result.service';
 
 interface Inspection {
   line: number;
@@ -28,7 +29,8 @@ export class InspectionManager {
   constructor(
     public fileState: FileStateService,
     private uploadService: InspectionUploadService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private traceResult: TraceResultService
   ) {
     // Refresh filename & clear inspections on new file
     effect(() => {
@@ -138,6 +140,7 @@ export class InspectionManager {
 
         // ✅ Store backend JSON for the widget
         this.backendResponse = res;
+        this.traceResult.setResult(res);
 
         console.log('Backend JSON:', res);
         alert('Inspection data sent to backend successfully.');
