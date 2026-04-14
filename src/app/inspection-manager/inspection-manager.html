@@ -90,7 +90,11 @@
                   <span>Flags: {{ selectedFlagsText(ins) }}</span>
                 }
               </div>
-              <button class="delete-btn" (click)="deleteInspection(i)">X</button>
+              <div class="summary-actions">
+                <button class="edit-btn" (click)="editInspection(i)">Edit</button>
+                <button class="dup-btn" (click)="duplicateInspection(i)">Duplicate</button>
+                <button class="delete-btn" (click)="deleteInspection(i)">X</button>
+              </div>
             </div>
           }
         </div>

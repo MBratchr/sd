@@ -41,6 +41,13 @@ export class FileViewer {
   manualText = '';
   manualFileName = 'manual-input.asm';
 
+  // snippet input state
+  snippetMode = false;
+  snippetLocked = false;
+  snippetDataText = '';
+  snippetTextText = '';
+  snippetFileName = 'snippet.asm';
+
   private readonly asmLike = /\.(asm|s|inc)$/i;
 
   get isAsmLike(): boolean {
@@ -146,11 +153,15 @@ export class FileViewer {
   private exitManualModeIfNeeded() {
     this.manualMode = false;
     this.manualLocked = false;
+    this.snippetMode = false;
+    this.snippetLocked = false;
   }
 
   // ----- manual input flow
   startManualInput() {
     this.resetViewErrors();
+    this.snippetMode = false;
+    this.snippetLocked = false;
     this.manualMode = true;
     this.manualLocked = false;
 
@@ -180,6 +191,57 @@ export class FileViewer {
     this.fileSize = new Blob([finalText]).size;
 
     this.manualLocked = true;
+    this.applyContent(finalText);
+  }
+
+  // ----- snippet input flow
+  startSnippetInput() {
+    this.resetViewErrors();
+    this.manualMode = false;
+    this.manualLocked = false;
+    this.snippetMode = true;
+    this.snippetLocked = false;
+
+    this.fileName = this.snippetFileName;
+    this.fileSize = 0;
+    this.content = '';
+    this.lines = [];
+    this.fileState.clearFile();
+  }
+
+  get canFinishSnippet(): boolean {
+    return !!(this.snippetDataText.trim() || this.snippetTextText.trim());
+  }
+
+  finishSnippetInput() {
+    const parts: string[] = [];
+
+    const dataBlock = (this.snippetDataText ?? '').replace(/\r\n/g, '\n').trimEnd();
+    const textBlock = (this.snippetTextText ?? '').replace(/\r\n/g, '\n').trimEnd();
+
+    if (dataBlock) {
+      parts.push('section .data');
+      // indent each line of the user's data content
+      for (const line of dataBlock.split('\n')) {
+        parts.push('    ' + line);
+      }
+      parts.push('');
+    }
+
+    if (textBlock) {
+      parts.push('section .text');
+      // indent each line of the user's text content
+      for (const line of textBlock.split('\n')) {
+        parts.push('    ' + line);
+      }
+    }
+
+    const finalText = parts.join('\n').trimEnd();
+
+    this.fileName = this.snippetFileName || 'snippet.asm';
+    this.fileSize = new Blob([finalText]).size;
+
+    this.snippetLocked = true;
     this.applyContent(finalText);
   }
 }

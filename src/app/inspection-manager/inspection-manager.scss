@@ -4,6 +4,7 @@
   background: var(--bg-elevated);
   padding: 1rem;
   height: 100%;
+  overflow: hidden;
 
   display: flex;
   flex-direction: column;
@@ -27,6 +28,8 @@
 .inspection-manager .add-btn,
 .inspection-manager .done-btn,
 .inspection-manager .delete-btn,
+.inspection-manager .edit-btn,
+.inspection-manager .dup-btn,
 .inspection-manager .test-btn {
   border-radius: 999px;
   padding: 0.4rem 0.95rem;
@@ -55,28 +58,32 @@
 .inspection-manager .add-btn:hover,
 .inspection-manager .done-btn:hover,
 .inspection-manager .delete-btn:hover,
+.inspection-manager .edit-btn:hover,
+.inspection-manager .dup-btn:hover,
 .inspection-manager .test-btn:hover:not([disabled]) {
   background: var(--btn-hover);
   border-color: var(--btn-hover);
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  color: var(--btn-text-active);
+  box-shadow: var(--shadow-hover);
 }
 
 /* Pressed → gradient (darkened in dark mode) */
 .inspection-manager .add-btn:active,
 .inspection-manager .done-btn:active,
 .inspection-manager .delete-btn:active,
+.inspection-manager .edit-btn:active,
+.inspection-manager .dup-btn:active,
 .inspection-manager .test-btn:active:not([disabled]) {
   background: linear-gradient(
     135deg,
     var(--btn-pressed-1),
     var(--btn-pressed-2)
   );
-  color: #ffffff;
+  color: var(--btn-text-active);
   transform: translateY(1px) scale(0.99);
   box-shadow:
-    0 0 0 1px rgba(120, 81, 169, 0.55),
-    0 12px 25px rgba(120, 81, 169, 0.65);
+    0 0 0 1px var(--accent-glow-tight),
+    0 12px 25px var(--accent-glow-wide);
 }
 
 /* Disabled Test/Done button */
@@ -107,12 +114,13 @@
 /* INSPECTION LIST              */
 /* ---------------------------- */
 
-/* Scroll instead of stretching to push Test off-screen */
+/* Fill available space; scroll only when inspections overflow */
 .inspections {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  max-height: 320px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
 }
 
@@ -149,8 +157,8 @@
 
 .line-input:focus {
   outline: none;
-  border-color: rgba(120, 81, 169, 0.7);
-  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 /* Sections */
@@ -204,4 +212,18 @@
 
 .summary strong {
   color: var(--text);
+}
+
+/* Action buttons group in locked summary */
+.summary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.edit-btn,
+.dup-btn {
+  padding-inline: 0.7rem;
+  font-size: 0.8rem;
 }

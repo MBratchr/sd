@@ -21,7 +21,7 @@ interface Inspection {
 @Component({
   selector: 'inspection-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule, RegisterTrace],
+  imports: [CommonModule, FormsModule],
   templateUrl: './inspection-manager.html',
   styleUrls: ['./inspection-manager.scss'],
 })
@@ -86,6 +86,18 @@ export class InspectionManager {
   canLock(i: number): boolean { return this.inspections[i].line > 0; }
   lockInspection(i: number) { this.inspections[i].locked = true; }
   deleteInspection(i: number) { this.inspections.splice(i, 1); }
+
+  editInspection(i: number) { this.inspections[i].locked = false; }
+
+  duplicateInspection(i: number) {
+    const src = this.inspections[i];
+    this.inspections.push({
+      line: 0,
+      registers: { ...src.registers },
+      flags: { ...src.flags },
+      locked: false
+    });
+  }
 
   hasAnyRegisters(ins: Inspection): boolean {
     return this.registerOptions.some(r => !!ins.registers[r]);

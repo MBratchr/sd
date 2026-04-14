@@ -19,6 +19,7 @@
 /* Base style: pastel purple squircles */
 .file-viewer-container .file-btn,
 .file-viewer-container .manual-btn,
+.file-viewer-container .snippet-btn,
 .file-viewer-container .done-btn {
   border-radius: 999px;
   padding: 0.55rem 1.15rem;
@@ -46,27 +47,29 @@
 /* Hover: royal purple (or darker in dark mode) */
 .file-viewer-container .file-btn:hover,
 .file-viewer-container .manual-btn:hover,
+.file-viewer-container .snippet-btn:hover,
 .file-viewer-container .done-btn:hover {
   background: var(--btn-hover);
   border-color: var(--btn-hover);
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  color: var(--btn-text-active);
+  box-shadow: var(--shadow-hover);
 }
 
 /* Pressed: purple gradient (darkened in dark mode) */
 .file-viewer-container .file-btn:active,
 .file-viewer-container .manual-btn:active,
+.file-viewer-container .snippet-btn:active,
 .file-viewer-container .done-btn:active {
   background: linear-gradient(
     135deg,
     var(--btn-pressed-1),
     var(--btn-pressed-2)
   );
-  color: #ffffff;
+  color: var(--btn-text-active);
   transform: translateY(1px) scale(0.99);
   box-shadow:
-    0 0 0 1px rgba(120, 81, 169, 0.55),
-    0 12px 25px rgba(120, 81, 169, 0.65);
+    0 0 0 1px var(--accent-glow-tight),
+    0 12px 25px var(--accent-glow-wide);
 }
 
 /* Disabled state for Done button */
@@ -93,6 +96,11 @@
 
 /* Manual input button label */
 .file-viewer-container .manual-btn {
+  white-space: nowrap;
+}
+
+/* Snippet button label */
+.file-viewer-container .snippet-btn {
   white-space: nowrap;
 }
 
@@ -130,10 +138,10 @@
 }
 
 .dropzone:hover {
-  background: rgba(120, 81, 169, 0.08);
-  border-color: rgba(120, 81, 169, 0.7);
+  background: var(--accent-bg-subtle);
+  border-color: var(--focus-border);
   color: var(--text);
-  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 /* ---------------------------- */
@@ -148,13 +156,13 @@
 }
 
 .warn {
-  background: rgba(251, 191, 36, 0.1);
-  color: #92400e;
+  background: var(--warn-bg);
+  color: var(--warn-text);
 }
 
 .error {
-  background: rgba(239, 68, 68, 0.12);
-  color: #991b1b;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
 /* ---------------------------- */
@@ -192,8 +200,8 @@
 
 .name-input:focus {
   outline: none;
-  border-color: rgba(120, 81, 169, 0.7);
-  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 .editor-area {
@@ -212,8 +220,8 @@
 
 .editor-area:focus {
   outline: none;
-  border-color: rgba(120, 81, 169, 0.7);
-  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 .editor-actions {
@@ -253,7 +261,7 @@
   background: transparent;
 }
 .viewer::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.6);
+  background: var(--scrollbar-thumb);
   border-radius: 999px;
 }
 
@@ -272,7 +280,8 @@
   display: flex;
   align-items: baseline;
   border-bottom: 1px solid var(--border-subtle);
-  padding: 0 0.25rem;
+  padding: 0.05rem 0.25rem;
+  line-height: 1.3;
 }
 .line:last-child {
   border-bottom: none;
@@ -351,8 +360,8 @@
 /* Focus ring to match other inputs */
 .template-select select:focus {
   outline: none;
-  border-color: rgba(120, 81, 169, 0.7);
-  box-shadow: 0 0 0 1px rgba(120, 81, 169, 0.35);
+  border-color: var(--focus-border);
+  box-shadow: 0 0 0 1px var(--focus-ring);
 }
 
 /* Disabled state (if you ever disable it) */
@@ -370,4 +379,33 @@
     width: 100%;
     min-width: 0;
   }
+}
+
+/* ---------------------------- */
+/* SNIPPET EDITOR               */
+/* ---------------------------- */
+
+.snippet-editor {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.snippet-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.snippet-label {
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.snippet-area {
+  min-height: 100px;
+  max-height: 200px;
 }

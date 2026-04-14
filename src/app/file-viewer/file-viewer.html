@@ -11,7 +11,8 @@
       Drag & drop .asm here
     </div>
 
-    <button class="manual-btn" (click)="startManualInput()">Input Lines Directly</button>
+    <button class="manual-btn" (click)="startManualInput()">Input Manually</button>
+    <button class="snippet-btn" (click)="startSnippetInput()">Input Snippet</button>
   </div>
 
   @if (warn) { <div class="warn">{{ warn }}</div> }
@@ -58,8 +59,44 @@
     </div>
   }
 
+  <!-- Snippet editor -->
+  @if (snippetMode && !snippetLocked) {
+    <div class="editor snippet-editor">
+      <div class="editor-header">
+        <label>
+          File name:
+          <input class="name-input" [(ngModel)]="snippetFileName" placeholder="snippet.asm" />
+        </label>
+      </div>
+
+      <div class="snippet-section">
+        <span class="snippet-label">.data</span>
+        <textarea
+          class="editor-area snippet-area"
+          [(ngModel)]="snippetDataText"
+          placeholder="Enter .data section content…"
+        ></textarea>
+      </div>
+
+      <div class="snippet-section">
+        <span class="snippet-label">.text</span>
+        <textarea
+          class="editor-area snippet-area"
+          [(ngModel)]="snippetTextText"
+          placeholder="Enter .text section content…"
+        ></textarea>
+      </div>
+
+      <div class="editor-actions">
+        <button class="done-btn" [disabled]="!canFinishSnippet" (click)="finishSnippetInput()">
+          Done
+        </button>
+      </div>
+    </div>
+  }
+
   <!-- Viewer -->
-  @if (content && (!manualMode || manualLocked)) {
+  @if (content && (!manualMode || manualLocked) && (!snippetMode || snippetLocked)) {
     <div class="meta">
       <div><strong>File:</strong> {{ fileName }}</div>
       <div><strong>Size:</strong> {{ fileSize | number }} bytes</div>

@@ -17,6 +17,24 @@
   --btn-pressed-1: #aa0022;
   --btn-pressed-2: #550011;
 
+  /* Focus / glow – derived from accent */
+  --focus-border: rgba(170, 0, 34, 0.7);
+  --focus-ring: rgba(170, 0, 34, 0.35);
+  --accent-glow-tight: rgba(170, 0, 34, 0.55);
+  --accent-glow-wide: rgba(170, 0, 34, 0.65);
+  --accent-bg-subtle: rgba(170, 0, 34, 0.08);
+
+  /* Utility */
+  --btn-text-active: #ffffff;
+  --shadow-hover: 0 10px 25px rgba(15, 23, 42, 0.18);
+  --scrollbar-thumb: rgba(148, 163, 184, 0.6);
+
+  /* Status */
+  --warn-bg: rgba(251, 191, 36, 0.1);
+  --warn-text: #92400e;
+  --error-bg: rgba(239, 68, 68, 0.12);
+  --error-text: #991b1b;
+
   /* LIGHT MODE – true white */
   --bg: #ffffff;           /* page background */
   --bg-elevated: #f3f2f2;  /* cards */
@@ -59,6 +77,14 @@
   --btn-hover: #ff0033;      /* deeper hover purple */
   --btn-pressed-1: #ff0033;  /* darker gradient top */
   --btn-pressed-2: #ff5577;  /* darker gradient bottom */
+
+  /* Dark-mode utility overrides */
+  --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.35);
+  --scrollbar-thumb: rgba(148, 163, 184, 0.4);
+  --warn-bg: rgba(251, 191, 36, 0.08);
+  --warn-text: #fbbf24;
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-text: #fca5a5;
 }
 
 /* ------------------------------------------------------------------ */
@@ -68,12 +94,14 @@
 .layout {
   display: grid;
   grid-template-columns: 59% 40%;
+  grid-template-rows: 60vh auto;
   gap: 1rem;
 }
 
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
+    grid-template-rows: 45vh auto auto;
   }
 }
 
@@ -150,7 +178,7 @@
 .theme-thumb.theme-thumb-on {
   transform: translateX(24px);
   background: linear-gradient(135deg, var(--purple), var(--purple-strong));
-  box-shadow: 0 4px 18px rgba(120, 81, 169, 0.6);
+  box-shadow: 0 4px 18px var(--accent-glow-wide);
 }
 
 /* ------------------------------------------------------------------ */
@@ -195,8 +223,8 @@
 .page button:hover {
   background: var(--btn-hover);
   border-color: var(--btn-hover);
-  color: #ffffff;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+  color: var(--btn-text-active);
+  box-shadow: var(--shadow-hover);
 }
 
 .page button:active {
@@ -205,11 +233,11 @@
     var(--btn-pressed-1),
     var(--btn-pressed-2)
   );
-  color: #ffffff;
+  color: var(--btn-text-active);
   transform: translateY(1px) scale(0.99);
   box-shadow:
-    0 0 0 1px rgba(120, 81, 169, 0.55),
-    0 12px 25px rgba(120, 81, 169, 0.65);
+    0 0 0 1px var(--accent-glow-tight),
+    0 12px 25px var(--accent-glow-wide);
 }
 
 .page button[disabled] {
@@ -223,4 +251,3 @@
   grid-column: 1 / -1;
   display: block;
 }
-

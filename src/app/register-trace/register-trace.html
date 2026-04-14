@@ -1,8 +1,9 @@
 <div class="card">
+
   <div class="header">
     <div class="title">
       <div class="h">Register Trace</div>
-      <div class="sub">Separate graphs for registers vs flags</div>
+      <div class="sub">Hover over points on the graph to view their values</div>
     </div>
 
     <div class="controls">
@@ -28,6 +29,32 @@
         />
       </div>
     </div>
+  </div>
+
+  <!-- OPTIONAL: keep the table if you still want it (shows both selected regs + flags) -->
+  <div class="table">
+    <div class="table-title">Result Table</div>
+
+    <table *ngIf="filteredFrames().length; else emptyTable">
+      <thead>
+        <tr>
+          <th class="linecol">Line</th>
+          <th *ngFor="let k of selectedRegs()">{{ k }}</th>
+          <th *ngFor="let k of selectedFlags()">{{ k }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of filteredFrames()">
+          <td class="linecol">{{ f.line }}</td>
+          <td *ngFor="let k of selectedRegs()">{{ f.regs[k] ?? '—' }}</td>
+          <td *ngFor="let k of selectedFlags()">{{ (f.flags?.[k] ?? '—') }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #emptyTable>
+      <div class="empty">No data given.</div>
+    </ng-template>
   </div>
 
   <div class="sections">
@@ -134,29 +161,4 @@
     </section>
   </div>
 
-  <!-- OPTIONAL: keep the table if you still want it (shows both selected regs + flags) -->
-  <div class="table">
-    <div class="table-title">Line-by-line state</div>
-
-    <table *ngIf="filteredFrames().length; else emptyTable">
-      <thead>
-        <tr>
-          <th class="linecol">Line</th>
-          <th *ngFor="let k of selectedRegs()">{{ k }}</th>
-          <th *ngFor="let k of selectedFlags()">{{ k }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let f of filteredFrames()">
-          <td class="linecol">{{ f.line }}</td>
-          <td *ngFor="let k of selectedRegs()">{{ f.regs[k] ?? '—' }}</td>
-          <td *ngFor="let k of selectedFlags()">{{ (f.flags?.[k] ?? '—') }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <ng-template #emptyTable>
-      <div class="empty">No trace frames in range.</div>
-    </ng-template>
-  </div>
 </div>

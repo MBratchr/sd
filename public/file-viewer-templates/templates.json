@@ -3,12 +3,18 @@
     "id": "default",
     "label": "Default",
     "file": "/file-viewer-templates/default.txt",
-    "suggestedFileName": "manual-input.asm"
+    "suggestedFileName": "assemblyfile.asm"
   },
   {
     "id": "hello_world",
     "label": "Hello World",
     "file": "/file-viewer-templates/hello-world-temp.txt",
     "suggestedFileName": "hello.asm"
+  },
+  {
+    "id": "empty",
+    "label": "Empty Sections",
+    "file": "/file-viewer-templates/empty-template.txt",
+    "suggestedFileName": "assemblyfile.asm"
   }
 ]
