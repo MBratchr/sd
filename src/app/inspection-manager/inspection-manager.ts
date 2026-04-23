@@ -32,15 +32,11 @@ export class InspectionManager {
     private cdr: ChangeDetectorRef,
     private traceResult: TraceResultService
   ) {
-    // Refresh filename & clear inspections on new file
     effect(() => {
       const _token = this.fileState.fileToken();
       this.currentFileName = this.fileState.fileName();
       this.resetInspections();
-
-      // clear old backend output when file changes
       this.backendResponse = null;
-
       this.cdr.markForCheck();
     });
   }
@@ -48,7 +44,6 @@ export class InspectionManager {
   currentFileName = '';
   isUploading = false;
 
-  /** Stores the JSON returned by the backend (your example payload) */
   backendResponse: BackendSandboxResponse | null = null;
 
   readonly registerOptions = [
@@ -120,13 +115,12 @@ export class InspectionManager {
     for (const r of this.registerOptions) {
       parts.push(`${r.toLowerCase()}:${ins.registers[r] ? 1 : 0}`);
     }
-    for (const f of this.flagOptions) {
-      parts.push(`${f.toLowerCase()}:${ins.flags[f] ? 1 : 0}`);
-    }
+    // If any flag is selected, request rflags from backend
+    const anyFlag = this.flagOptions.some(f => ins.flags[f]);
+    parts.push(`rflags:${anyFlag ? 1 : 0}`);
     return parts.join(', ');
   }
 
-  // "Test" → POST ASM + instructions to backend
   exportInspections() {
     const instructionLines = this.inspections
       .filter(ins => ins.locked)
@@ -149,11 +143,8 @@ export class InspectionManager {
     this.uploadService.uploadInspection(asmFile, instructionsBlob).subscribe({
       next: (res) => {
         this.isUploading = false;
-
-        // ✅ Store backend JSON for the widget
         this.backendResponse = res;
         this.traceResult.setResult(res);
-
         console.log('Backend JSON:', res);
         alert('Inspection data sent to backend successfully.');
         this.cdr.markForCheck();
