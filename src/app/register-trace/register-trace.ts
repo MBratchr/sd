@@ -219,8 +219,6 @@ export class RegisterTrace implements AfterViewInit {
 
   /** Prefer a safe numeric value when reasonable; otherwise keep hex (string) */
   private pickBestRegValue(rv: BackendRegisterValue): RegValue {
-    // If u64 is within JS safe integer, use it so "Value" chart can plot normally.
-    // Otherwise keep hex (string).
     if (Number.isSafeInteger(rv.u64)) return rv.u64;
     return rv.hex;
   }
@@ -230,16 +228,22 @@ export class RegisterTrace implements AfterViewInit {
 
     for (const bp of resp.breakpoints ?? []) {
       const regs: Record<string, RegValue> = {};
+      const flags: Record<string, RegValue> = {};
 
       for (const [name, rv] of Object.entries(bp.registers ?? {})) {
+        if ((name === 'rflags' || name === 'eflags') && rv.flags) {
+          for (const [flagName, flagVal] of Object.entries(rv.flags)) {
+            flags[flagName.toUpperCase()] = flagVal as number;
+          }
+          continue;
+        }
         regs[name] = this.pickBestRegValue(rv);
       }
 
       out.push({
         line: bp.line,
         regs,
-        // backend sample doesn’t include flags yet; keep empty/undefined
-        flags: undefined,
+        flags: Object.keys(flags).length ? flags : undefined,
       });
     }
 
@@ -255,16 +259,12 @@ export class RegisterTrace implements AfterViewInit {
     return frame.flags && key in frame.flags ? frame.flags[key] : null;
   }
 
-  /**
-   * Heuristic: treat large hex values as pointers/addresses so they don't blow up the
-   * "register value" chart scaling.
-   */
   private isProbablyAddressHex(s: string): boolean {
     const t = s.trim().toLowerCase();
     if (!t.startsWith('0x')) return false;
 
     const n = parseInt(t.slice(2), 16);
-    return Number.isFinite(n) && n >= 0x0010_0000; // >= 1MB
+    return Number.isFinite(n) && n >= 0x0010_0000;
   }
 
   private toNumber(v: RegValue, opts?: { ignoreAddresses?: boolean }): number | null {
@@ -327,7 +327,6 @@ export class RegisterTrace implements AfterViewInit {
     const values = frames.map((f) => this.rawReg(f, key));
 
     if (mode === 'value') {
-      // Ignore pointer-like hex addresses so axis stays sane.
       return values.map((v) => {
         const n = this.toNumber(v, { ignoreAddresses: true });
         return n === null ? NaN : n;
