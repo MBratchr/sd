@@ -208,6 +208,16 @@
   background: var(--rt-surface);
   padding: 10px;
   height: 260px;
+  position: relative;
+  overflow: hidden;
+
+  canvas {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: calc(100% - 20px) !important;
+    height: calc(100% - 20px) !important;
+  }
 }
 
 .table {
