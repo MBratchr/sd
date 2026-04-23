@@ -115,7 +115,6 @@ export class InspectionManager {
     for (const r of this.registerOptions) {
       parts.push(`${r.toLowerCase()}:${ins.registers[r] ? 1 : 0}`);
     }
-    // If any flag is selected, request rflags from backend
     const anyFlag = this.flagOptions.some(f => ins.flags[f]);
     parts.push(`rflags:${anyFlag ? 1 : 0}`);
     return parts.join(', ');
@@ -144,7 +143,14 @@ export class InspectionManager {
       next: (res) => {
         this.isUploading = false;
         this.backendResponse = res;
-        this.traceResult.setResult(res);
+
+        const selectedFlags = [...new Set(
+          this.inspections
+            .filter(ins => ins.locked)
+            .flatMap(ins => this.flagOptions.filter(f => ins.flags[f]))
+        )];
+
+        this.traceResult.setResult(res, selectedFlags);
         console.log('Backend JSON:', res);
         alert('Inspection data sent to backend successfully.');
         this.cdr.markForCheck();
