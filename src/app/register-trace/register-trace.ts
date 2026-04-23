@@ -33,6 +33,8 @@ import {
   BackendRegisterValue,
 } from './register-trace.models';
 
+import { TraceResultService } from '../services/trace-result.service';
+
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
 type FlagPlotMode = 'raw' | 'toggle';
@@ -48,13 +50,13 @@ type RegPlotMode = 'value' | 'toggle';
 export class RegisterTrace implements AfterViewInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly hostRef = inject(ElementRef<HTMLElement>);
+  private readonly traceResult = inject(TraceResultService);
 
   @ViewChild('regsCanvas') regsCanvas?: ElementRef<HTMLCanvasElement>;
   @ViewChild('flagsCanvas') flagsCanvas?: ElementRef<HTMLCanvasElement>;
 
   private readonly _trace = signal<TraceFrame[]>([]);
 
-  /** Accept either internal frames OR backend JSON response */
   @Input()
   set trace(value: TraceFrame[] | BackendSandboxResponse | null | undefined) {
     const frames = this.normalizeTraceInput(value);
@@ -65,7 +67,6 @@ export class RegisterTrace implements AfterViewInit {
     this.refreshAllCharts();
   }
 
-  // ----- UI state -----
   readonly regPlotMode = signal<RegPlotMode>('value');
   readonly flagPlotMode = signal<FlagPlotMode>('toggle');
 
@@ -75,7 +76,6 @@ export class RegisterTrace implements AfterViewInit {
   readonly lineFrom = signal<number | null>(null);
   readonly lineTo = signal<number | null>(null);
 
-  // ----- Derived lists -----
   readonly regKeys = computed(() => {
     const frames = this._trace();
     const set = new Set<string>();
@@ -110,7 +110,6 @@ export class RegisterTrace implements AfterViewInit {
     return frames.filter((f) => f.line >= from && f.line <= to);
   });
 
-  // ----- Charts -----
   private regsChart?: Chart<'line', number[], string>;
   private flagsChart?: Chart<'line', number[], string>;
   private themeObserver?: MutationObserver;
@@ -118,7 +117,6 @@ export class RegisterTrace implements AfterViewInit {
   ngAfterViewInit(): void {
     this.refreshAllCharts();
 
-    // Watch your theme toggle (.page.light / .page.dark)
     const pageEl = this.hostRef.nativeElement.closest('.page') as HTMLElement | null;
     if (pageEl) {
       this.themeObserver = new MutationObserver(() => this.refreshAllCharts());
@@ -136,7 +134,6 @@ export class RegisterTrace implements AfterViewInit {
     });
   }
 
-  // ----- Actions used by template -----
   resetDefaults(): void {
     const frames = this._trace();
     if (!frames.length) {
@@ -157,17 +154,9 @@ export class RegisterTrace implements AfterViewInit {
     this.lineTo.set(frames[frames.length - 1].line);
   }
 
-  onRangeChange(): void {
-    this.refreshAllCharts();
-  }
-
-  onRegModeChange(): void {
-    this.refreshRegsChart();
-  }
-
-  onFlagModeChange(): void {
-    this.refreshFlagsChart();
-  }
+  onRangeChange(): void { this.refreshAllCharts(); }
+  onRegModeChange(): void { this.refreshRegsChart(); }
+  onFlagModeChange(): void { this.refreshFlagsChart(); }
 
   setSelectAllRegs(on: boolean): void {
     this.selectedRegs.set(on ? this.regKeys() : []);
@@ -195,8 +184,6 @@ export class RegisterTrace implements AfterViewInit {
     this.refreshFlagsChart();
   }
 
-  // ----- Backend -> TraceFrame normalization -----
-
   private isBackendResponse(v: unknown): v is BackendSandboxResponse {
     if (!v || typeof v !== 'object') return false;
     const obj = v as Record<string, unknown>;
@@ -205,19 +192,11 @@ export class RegisterTrace implements AfterViewInit {
 
   private normalizeTraceInput(value: TraceFrame[] | BackendSandboxResponse | null | undefined): TraceFrame[] {
     if (!value) return [];
-
-    // If already internal format
     if (Array.isArray(value)) return value;
-
-    // Backend format
-    if (this.isBackendResponse(value)) {
-      return this.fromBackend(value);
-    }
-
+    if (this.isBackendResponse(value)) return this.fromBackend(value);
     return [];
   }
 
-  /** Prefer a safe numeric value when reasonable; otherwise keep hex (string) */
   private pickBestRegValue(rv: BackendRegisterValue): RegValue {
     if (Number.isSafeInteger(rv.u64)) return rv.u64;
     return rv.hex;
@@ -225,6 +204,7 @@ export class RegisterTrace implements AfterViewInit {
 
   private fromBackend(resp: BackendSandboxResponse): TraceFrame[] {
     const out: TraceFrame[] = [];
+    const allowedFlags = this.traceResult.selectedFlags();
 
     for (const bp of resp.breakpoints ?? []) {
       const regs: Record<string, RegValue> = {};
@@ -233,7 +213,10 @@ export class RegisterTrace implements AfterViewInit {
       for (const [name, rv] of Object.entries(bp.registers ?? {})) {
         if ((name === 'rflags' || name === 'eflags') && rv.flags) {
           for (const [flagName, flagVal] of Object.entries(rv.flags)) {
-            flags[flagName.toUpperCase()] = flagVal as number;
+            const upperFlag = flagName.toUpperCase();
+            if (allowedFlags.length === 0 || allowedFlags.includes(upperFlag)) {
+              flags[upperFlag] = flagVal as number;
+            }
           }
           continue;
         }
@@ -250,7 +233,6 @@ export class RegisterTrace implements AfterViewInit {
     return out;
   }
 
-  // ----- Value helpers -----
   private rawReg(frame: TraceFrame, key: string): RegValue {
     return frame.regs && key in frame.regs ? frame.regs[key] : null;
   }
@@ -262,7 +244,6 @@ export class RegisterTrace implements AfterViewInit {
   private isProbablyAddressHex(s: string): boolean {
     const t = s.trim().toLowerCase();
     if (!t.startsWith('0x')) return false;
-
     const n = parseInt(t.slice(2), 16);
     return Number.isFinite(n) && n >= 0x0010_0000;
   }
@@ -291,20 +272,13 @@ export class RegisterTrace implements AfterViewInit {
   private buildToggleSeries(values: RegValue[]): number[] {
     const out: number[] = [];
     for (let i = 0; i < values.length; i++) {
-      if (i === 0) {
-        out.push(0);
-        continue;
-      }
+      if (i === 0) { out.push(0); continue; }
 
       const prev = values[i - 1];
       const curr = values[i];
-
       const pn = this.toNumber(prev);
       const cn = this.toNumber(curr);
-
-      const changed =
-        pn !== null && cn !== null ? pn !== cn : String(prev ?? '') !== String(curr ?? '');
-
+      const changed = pn !== null && cn !== null ? pn !== cn : String(prev ?? '') !== String(curr ?? '');
       out.push(changed ? 1 : 0);
     }
     return out;
@@ -336,7 +310,6 @@ export class RegisterTrace implements AfterViewInit {
     return this.buildToggleSeries(values);
   }
 
-  // ----- Theme + colors -----
   private cssVar(el: HTMLElement, name: string, fallback: string): string {
     const v = getComputedStyle(el).getPropertyValue(name).trim();
     return v || fallback;
@@ -346,7 +319,6 @@ export class RegisterTrace implements AfterViewInit {
     const hue = (index * 137.508) % 360;
     const sat = 78;
     const light = isDark ? 62 : 45;
-
     const stroke = `hsl(${hue} ${sat}% ${light}%)`;
     const fill = `hsla(${hue} ${sat}% ${light}% / 0.18)`;
     return { stroke, fill };
@@ -360,13 +332,11 @@ export class RegisterTrace implements AfterViewInit {
     return { isDark, text, muted, grid };
   }
 
-  // ----- Chart config builders -----
   private buildRegsConfig(canvas: HTMLCanvasElement): ChartConfiguration<'line', number[], string> {
     const frames = this.filteredFrames();
     const keys = this.selectedRegs();
     const labels = frames.map((f) => String(f.line));
     const mode = this.regPlotMode();
-
     const { isDark, text, muted, grid } = this.baseTheme(canvas);
 
     const datasets: ChartDataset<'line', number[]>[] = keys.map((k, idx) => {
@@ -419,7 +389,6 @@ export class RegisterTrace implements AfterViewInit {
     const keys = this.selectedFlags();
     const labels = frames.map((f) => String(f.line));
     const mode = this.flagPlotMode();
-
     const { isDark, text, muted, grid } = this.baseTheme(canvas);
 
     const datasets: ChartDataset<'line', number[]>[] = keys.map((k, idx) => {
@@ -467,7 +436,6 @@ export class RegisterTrace implements AfterViewInit {
     };
   }
 
-  // ----- Refreshers -----
   refreshAllCharts(): void {
     this.refreshRegsChart();
     this.refreshFlagsChart();
